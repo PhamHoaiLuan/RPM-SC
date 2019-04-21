@@ -34,7 +34,7 @@ contract RPM_SC{
         uint index2;
         mapping (uint=>bytes32) HPuK ;
         mapping (uint=>address) Doctor;
-        mapping (uint=>bytes4)  HI;
+        mapping (uint=>bytes2)  HI;
         mapping (address=>bool) Doctor_Valid;
     }
     
@@ -52,7 +52,7 @@ contract RPM_SC{
         Patient_Removed(_PatientAddress);
     }
 
-    function Authorize(address _DoctorAddress,address _PatientAddress,bytes32 _HPuK, bytes4 _HI) onlyHospital public{
+    function Authorize(address _DoctorAddress,address _PatientAddress,bytes32 _HPuK, bytes2 _HI) onlyHospital public{
         
         var patient   = patients[_PatientAddress];
         patient.index1 = patient.index1 +1;
@@ -74,7 +74,7 @@ contract RPM_SC{
         HPuK_Modified(_PatientAddress,_index1);
     }
     
-     function Modify_HI(address _PatientAddress,bytes4 _HI, uint _index2) onlyHospital public{
+     function Modify_HI(address _PatientAddress,bytes2 _HI, uint _index2) onlyHospital public{
         var patient   = patients[_PatientAddress];
         patient.HI[_index2] = _HI;
         HI_Modified(_PatientAddress,_index2);
@@ -85,12 +85,12 @@ contract RPM_SC{
         return (patients[_PatientAddress].index1, patients[_PatientAddress].index2);
     }
     
-    function GetDoctor(address _PatientAddress, uint32 _index1) view public returns (address){
+    function GetDoctor(address _PatientAddress, uint _index1) view public returns (address){
         return patients[_PatientAddress].Doctor[_index1];
     }
 
-    function GetPuK(address _PatientAddress, uint32 _index1) view public returns (bytes32){
-        return patients[_PatientAddress].HPuK[_index1];
+    function GetPuK(address _PatientAddress, uint _index1, uint _index2) view public returns (bytes32,bytes2){
+        return (patients[_PatientAddress].HPuK[_index1],patients[_PatientAddress].HI[_index2]);
     }
 
 
@@ -112,9 +112,9 @@ contract RPM_SC{
     
     
     struct Data {
-        uint32 index1;
-        uint32 index2;
-        mapping (uint=> bytes4) HI;
+        uint index1;
+        uint index2;
+        mapping (uint=> bytes2) HI;
         mapping (uint => bytes32) HFile;
         mapping (uint => uint32) Time;
         mapping (uint => mapping(address =>bytes32)) HKey;
@@ -123,7 +123,7 @@ contract RPM_SC{
     
     mapping (address => Data) data;
     
-    function Store(bytes32 _HFile, uint32 _Timestamp, bytes32 _HKey,bytes4 _HI) onlyPatient public{
+    function Store(bytes32 _HFile, uint32 _Timestamp, bytes32 _HKey,bytes2 _HI) onlyPatient public{
         data[msg.sender].index1                            = data[msg.sender].index1 + 1;
         data[msg.sender].HFile[data[msg.sender].index1]    =  _HFile;
         data[msg.sender].Time[data[msg.sender].index1]     =  _Timestamp;
@@ -136,7 +136,7 @@ contract RPM_SC{
         Stored(msg.sender);
     }
     
-    function TransmitKey(address _DoctorAddress, uint _index1, bytes32 _HKey, bytes4 _HI) onlyPatient public{
+    function TransmitKey(address _DoctorAddress, uint _index1, bytes32 _HKey, bytes2 _HI) onlyPatient public{
         
         data[msg.sender].HKey[_index1][_DoctorAddress] = _HKey;
         if(data[msg.sender].HI[data[msg.sender].index2] != _HI){
@@ -147,16 +147,16 @@ contract RPM_SC{
         Transmited(_DoctorAddress);
     }
     
-    function GetTimestamp(address _address, uint _index) view public returns(uint32){
-        return (data[_address].Time[_index]);
+    function GetTimestamp(address _PatientAddress, uint _index1) view public returns(uint32){
+        return (data[_PatientAddress].Time[_index1]);
     }
     
     function GetindexSDS(address _PatientAddress) view public returns (uint,uint) {
         return (data[_PatientAddress].index1, data[_PatientAddress].index2);
     }
     
-    function GetFile(address _address, uint _index) view public returns(bytes32,bytes32){
-        return (data[_address].HFile[_index], data[_address].HKey[_index][msg.sender]);
+    function GetFile(address _PatientAddress, uint _index1, uint _index2) view public returns(bytes32,bytes32, bytes2){
+        return (data[_PatientAddress].HFile[_index1], data[_PatientAddress].HKey[_index1][msg.sender], data[_PatientAddress].HI[_index2]);
     }
     
     
