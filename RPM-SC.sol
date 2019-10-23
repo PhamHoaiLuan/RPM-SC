@@ -3,15 +3,56 @@ pragma solidity ^0.4.18;
 
 contract RPM_SC{
 
-    address public Hospital;
+     address public Government;
 
-    modifier onlyHospital() {
-        require(msg.sender == Hospital);
+
+
+    modifier onlyGovernment() {
+
+        require(msg.sender == Government);
+
         _;
+
     }
 
+
+
     function RPM_SC() public {
-        Hospital = msg.sender;
+
+        Government = msg.sender;
+
+    }
+
+    //******************************************************//
+
+    //******************************************************//
+
+    //                                                      //
+
+    //       Government Structure Smart Contract            //
+
+    //                                                      //
+
+    //******************************************************//
+
+    //******************************************************//
+    
+    mapping (address => bool) Hospital;
+
+
+
+    function RegisterHospital(address _HospitalAddress) onlyGovernment public {
+
+        Hospital[_HospitalAddress] = true;
+        
+    }
+
+
+
+    function UnregisterHospital(address _HospitalAddress) onlyGovernment public {
+
+        Hospital[_HospitalAddress] = false;
+
     }
 
     //******************************************************//
@@ -27,6 +68,14 @@ contract RPM_SC{
     event Authorized(address _PatientAddress, address _DoctorAddress);
     event HPuK_Modified(address _PatientAddress, uint _index);
     event HI_Modified(address _PatientAddress, uint _index);
+    
+    modifier onlyHospital() {
+
+        require(Hospital[msg.sender] == true);
+
+        _;
+
+    }
     
     struct Management {
         bool Valid;
